@@ -739,9 +739,6 @@ body {
   color: var(--granite);
   font-size: 0.84rem;
 }
-.site-footer-meta {
-  letter-spacing: 0.02em;
-}
 
 .certificate-export {
   position: fixed;

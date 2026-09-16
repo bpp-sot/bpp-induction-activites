@@ -94,7 +94,6 @@ export default function App() {
       </main>
       <footer className="site-footer">
         <span>BPP Induction</span>
-        <span className="site-footer-meta">Completion is based on the learner&rsquo;s declaration.</span>
       </footer>
     </div>
   );
