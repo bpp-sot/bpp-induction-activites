@@ -14,14 +14,14 @@ Static React/Vite app deployed to GitHub Pages at
 
 ## Architecture
 
-- **British Values** — self-hosted H5P Interactive Video under `public/h5p-content/british-values/`,
-  run by `h5p-standalone`. Completion is detected from the real xAPI dispatcher via
-  `src/lib/h5p.ts` (`getVerifiedCompletion`), which accepts only a top-level `completed`
-  statement with `result.completion === true` and valid score data.
-- **Prevent Duty** — external H5P.com iframe plus a learner declaration, until its `.h5p`
-  package is available.
+- Both activities are self-hosted H5P Interactive Videos (`public/h5p-content/british-values/`
+  and `public/h5p-content/prevent-duty/`), run by `h5p-standalone`. Completion is detected from
+  the real xAPI dispatcher via `src/lib/h5p.ts` (`getVerifiedCompletion`), which accepts only a
+  top-level `completed` statement with `result.completion === true` and valid score data.
+  Child `answered` events also carry `completion: true`, so the top-level check is load-bearing.
 - Progress lives in `localStorage` (key `bpp-induction-progress-v2`) and records a per-activity
-  completion method (`h5p-xapi` / `learner-declaration`) and optional score. Nothing is sent to a server.
+  completion method and optional score. Both activities expect `h5p-xapi`; a stored
+  `learner-declaration` is rejected. Nothing is sent to a server.
 
 ## Gotchas
 
@@ -32,4 +32,7 @@ Static React/Vite app deployed to GitHub Pages at
 - The British Values video is ~98 MiB — under GitHub's 100 MiB per-file limit but above its
   recommended 50 MiB, so pushes emit a warning.
 - `src/main.tsx` intentionally omits `StrictMode`: double-mounting re-initialises the imperative H5P player.
+- Instantiating an H5P standalone player clears `window.H5PStandalone`. `StandaloneH5P.tsx` caches
+  the constructor before first use; without that, opening a second activity in the same page session
+  fails with "H5P Standalone player failed to load".
 - Browser-side completion is not tamper-proof; it verifies the event the browser received, not learner identity.
