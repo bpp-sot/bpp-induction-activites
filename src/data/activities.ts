@@ -1,5 +1,9 @@
 export type ActivityId = "british-values" | "prevent-duty";
 
+export type ActivityDelivery =
+  | { type: "standalone"; contentPath: string }
+  | { type: "iframe"; embedUrl: string };
+
 export type Activity = {
   id: ActivityId;
   number: "01" | "02";
@@ -7,9 +11,9 @@ export type Activity = {
   shortTitle: string;
   description: string;
   iframeTitle: string;
-  embedUrl: string;
   accent: "red" | "cobalt";
-  pledge: string;
+  delivery: ActivityDelivery;
+  pledge?: string;
 };
 
 export const activities: Activity[] = [
@@ -20,9 +24,8 @@ export const activities: Activity[] = [
     shortTitle: "British Values",
     description: "Explore the principles that shape an inclusive, respectful and democratic learning community.",
     iframeTitle: "BPP British Values Activity",
-    embedUrl: "https://estio.h5p.com/content/1292030108558809267/embed",
     accent: "red",
-    pledge: "I confirm that I have completed the British Values activity and reflected on how it applies to my role at BPP.",
+    delivery: { type: "standalone", contentPath: "h5p-content/british-values" },
   },
   {
     id: "prevent-duty",
@@ -31,8 +34,8 @@ export const activities: Activity[] = [
     shortTitle: "Prevent Duty",
     description: "Build your awareness of Prevent Duty and the part we all play in keeping our community safe.",
     iframeTitle: "BPP Prevent Duty",
-    embedUrl: "https://estio.h5p.com/content/1292030267340169447/embed",
     accent: "cobalt",
+    delivery: { type: "iframe", embedUrl: "https://estio.h5p.com/content/1292030267340169447/embed" },
     pledge: "I confirm that I have completed the Prevent Duty activity and understand my responsibility to raise concerns appropriately.",
   },
 ];

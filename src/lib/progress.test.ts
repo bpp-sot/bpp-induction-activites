@@ -6,6 +6,7 @@ import {
   emptyProgress,
   STORAGE_KEY,
   type Progress,
+  type CompletionScore,
 } from "./progress";
 import type { ActivityId } from "../data/activities";
 
@@ -21,52 +22,86 @@ const makeStore = (initial: Record<string, string> = {}): Store => {
   };
 };
 
-describe("progress", () => {
+describe("progress v2", () => {
   it("returns empty progress when storage is empty", () => {
     const store = makeStore();
     expect(loadProgress(store)).toEqual(emptyProgress());
     expect(loadProgress(store).completed).toEqual({});
   });
 
-  it("round-trips a completed activity", () => {
+  it("round-trips a British xAPI completion with score", () => {
     const store = makeStore();
     const id: ActivityId = "british-values";
     const at = "2026-01-02T03:04:05.000Z";
+    const score: CompletionScore = { raw: 18, max: 20 };
     const started = loadProgress(store);
-    const completed = completeActivity(started, id, at);
+    const completed = completeActivity(started, id, "h5p-xapi", at, score);
     saveProgress(completed, store);
     const reloaded = loadProgress(store);
     expect(reloaded).toEqual(completed);
-    expect(reloaded.completed[id]).toBe(at);
+    expect(reloaded.completed[id]).toEqual({ completedAt: at, method: "h5p-xapi", score });
+  });
+
+  it("round-trips a Prevent learner-declaration completion", () => {
+    const store = makeStore();
+    const id: ActivityId = "prevent-duty";
+    const at = "2026-05-06T07:08:09.000Z";
+    const started = loadProgress(store);
+    const completed = completeActivity(started, id, "learner-declaration", at);
+    saveProgress(completed, store);
+    const reloaded = loadProgress(store);
+    expect(reloaded).toEqual(completed);
+    expect(reloaded.completed[id]).toEqual({ completedAt: at, method: "learner-declaration" });
+    expect(reloaded.completed[id]?.score).toBeUndefined();
   });
 
   it("ignores malformed and wrong-version data", () => {
-    const store = makeStore({
-      [STORAGE_KEY]: "not-json",
-    });
+    const store = makeStore({ [STORAGE_KEY]: "not-json" });
     expect(loadProgress(store)).toEqual(emptyProgress());
     const store2 = makeStore({
-      [STORAGE_KEY]: JSON.stringify({ version: 2, completed: {} }),
+      [STORAGE_KEY]: JSON.stringify({ version: 1, completed: {} }),
     });
     expect(loadProgress(store2)).toEqual(emptyProgress());
-    const store3 = makeStore({
+    const store3 = makeStore({ [STORAGE_KEY]: JSON.stringify({ version: 2, completed: null }) });
+    expect(loadProgress(store3)).toEqual(emptyProgress());
+  });
+
+  it("discards records with the wrong method for that activity", () => {
+    const store = makeStore({
       [STORAGE_KEY]: JSON.stringify({
-        version: 1,
+        version: 2,
         completed: {
-          "british-values": "not-a-date",
-          bogus: "2026-01-02T03:04:05.000Z",
-          "prevent-duty": 5,
+          "british-values": { completedAt: "2026-01-02T03:04:05.000Z", method: "learner-declaration" },
+          "prevent-duty": { completedAt: "2026-05-06T07:08:09.000Z", method: "h5p-xapi" },
         },
       }),
     });
-    const loaded = loadProgress(store3);
-    expect(loaded).toEqual(emptyProgress());
+    const loaded = loadProgress(store);
+    expect(loaded.completed).toEqual({});
+  });
+
+  it("discards records with invalid timestamps or scores", () => {
+    const store = makeStore({
+      [STORAGE_KEY]: JSON.stringify({
+        version: 2,
+        completed: {
+          "british-values": { completedAt: "not-a-date", method: "h5p-xapi" },
+          "prevent-duty": { completedAt: "2026-05-06T07:08:09.000Z", method: "learner-declaration", score: { raw: -1, max: 5 } },
+        },
+      }),
+    });
+    const loaded = loadProgress(store);
+    expect(loaded.completed).toEqual({});
   });
 
   it("does not mutate progress when completing an activity", () => {
     const base: Progress = emptyProgress();
-    const next = completeActivity(base, "prevent-duty", "2026-05-06T07:08:09.000Z");
+    const next = completeActivity(base, "british-values", "h5p-xapi", "2026-01-02T03:04:05.000Z", { raw: 18, max: 20 });
     expect(base.completed).toEqual({});
-    expect(next.completed).toEqual({ "prevent-duty": "2026-05-06T07:08:09.000Z" });
+    expect(next.completed["british-values"]).toEqual({
+      completedAt: "2026-01-02T03:04:05.000Z",
+      method: "h5p-xapi",
+      score: { raw: 18, max: 20 },
+    });
   });
 });
