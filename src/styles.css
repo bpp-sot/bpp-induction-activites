@@ -502,16 +502,6 @@ body {
   margin-bottom: 30px;
   overflow: hidden;
 }
-.h5p-external-frame iframe {
-  width: 100%;
-  max-width: 100%;
-  height: 637px;
-  border: 0;
-  display: block;
-  border-radius: var(--radius);
-  background: var(--white);
-}
-
 .h5p-standalone-frame {
   position: relative;
   background: var(--white);
@@ -581,57 +571,6 @@ body {
 }
 .standalone-back-btn {
   margin-top: 4px;
-}
-
-.checkpoint {
-  background: var(--white);
-  border: var(--hairline);
-  border-radius: var(--radius-md);
-  padding: 26px 28px;
-  border-left: 4px solid var(--accent, var(--cobalt));
-}
-.checkpoint-heading {
-  font-size: 1.4rem;
-  font-weight: 700;
-  color: var(--dark-granite);
-  margin: 0 0 8px;
-}
-.checkpoint-support {
-  margin: 0 0 18px;
-  color: var(--granite);
-  max-width: 60ch;
-}
-.checkpoint-pledge {
-  display: flex;
-  align-items: flex-start;
-  gap: 12px;
-  cursor: pointer;
-  padding: 14px 16px;
-  background: var(--mist);
-  border: var(--hairline);
-  border-radius: var(--radius);
-  margin-bottom: 18px;
-}
-.checkpoint-pledge input {
-  margin-top: 3px;
-  width: 20px;
-  height: 20px;
-  flex-shrink: 0;
-  accent-color: var(--accent, var(--cobalt));
-}
-.checkpoint-pledge span {
-  font-size: 0.98rem;
-  color: var(--dark-granite);
-}
-.checkpoint-actions {
-  display: flex;
-  align-items: center;
-  gap: 16px;
-  flex-wrap: wrap;
-}
-.checkpoint-already {
-  font-size: 0.9rem;
-  color: var(--granite);
 }
 
 .certificate-screen {
@@ -865,9 +804,6 @@ body {
     width: 120px;
   }
   .activity-card {
-    padding: 20px 18px;
-  }
-  .checkpoint {
     padding: 20px 18px;
   }
   .certificate-card {

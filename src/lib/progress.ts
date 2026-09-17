@@ -21,7 +21,7 @@ export const emptyProgress = (): Progress => ({ version: 2, completed: {} });
 
 const EXPECTED_METHOD: Record<ActivityId, CompletionMethod> = {
   "british-values": "h5p-xapi",
-  "prevent-duty": "learner-declaration",
+  "prevent-duty": "h5p-xapi",
 };
 
 const isValidId = (value: unknown): value is ActivityId =>

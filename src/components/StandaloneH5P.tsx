@@ -11,6 +11,15 @@ type Props = {
 
 type Status = "loading" | "ready" | "verified" | "error";
 
+// Instantiating an H5P standalone player clears window.H5PStandalone, so the
+// constructor must be captured before the first player is created, otherwise a
+// second activity on the same page cannot be initialised.
+let h5pStandaloneCtor: H5PStandaloneConstructor | null = null;
+const getH5PStandaloneCtor = (): H5PStandaloneConstructor | null => {
+  h5pStandaloneCtor ??= window.H5PStandalone?.H5P ?? null;
+  return h5pStandaloneCtor;
+};
+
 export default function StandaloneH5P({ activity, complete, onVerified }: Props) {
   const containerRef = useRef<HTMLDivElement>(null);
   const onVerifiedRef = useRef(onVerified);
@@ -27,12 +36,6 @@ export default function StandaloneH5P({ activity, complete, onVerified }: Props)
   }, [complete]);
 
   useEffect(() => {
-    if (activity.delivery.type !== "standalone") {
-      setStatus("error");
-      setErrorMsg("This activity is not configured for standalone H5P delivery.");
-      return;
-    }
-
     const container = containerRef.current;
     if (!container) return;
 
@@ -40,7 +43,7 @@ export default function StandaloneH5P({ activity, complete, onVerified }: Props)
     let handler: ((event: unknown) => void) | null = null;
 
     const baseUrl = new URL(import.meta.env.BASE_URL, window.location.href);
-    const contentPath = activity.delivery.contentPath;
+    const contentPath = activity.contentPath;
     const h5pJsonPath = new URL(contentPath, baseUrl).href;
     const librariesPath = new URL(contentPath, baseUrl).href;
     const contentJsonPath = new URL(`${contentPath}/content`, baseUrl).href;
@@ -48,7 +51,8 @@ export default function StandaloneH5P({ activity, complete, onVerified }: Props)
     const frameCss = new URL("h5p-player/styles/h5p.css", baseUrl).href;
     const xAPIObjectIRI = new URL(`activities/${activity.id}`, baseUrl).href;
 
-    if (!window.H5PStandalone?.H5P) {
+    const H5PStandalone = getH5PStandaloneCtor();
+    if (!H5PStandalone) {
       setStatus("error");
       setErrorMsg("H5P Standalone player failed to load.");
       return;
@@ -56,7 +60,7 @@ export default function StandaloneH5P({ activity, complete, onVerified }: Props)
 
     setStatus("loading");
 
-    new window.H5PStandalone.H5P(container, {
+    new H5PStandalone(container, {
       h5pJsonPath,
       librariesPath,
       contentJsonPath,
@@ -109,16 +113,6 @@ export default function StandaloneH5P({ activity, complete, onVerified }: Props)
       if (container) container.innerHTML = "";
     };
   }, [activity]);
-
-  if (activity.delivery.type !== "standalone") {
-    return (
-      <div className="automatic-checkpoint automatic-checkpoint-error">
-        <p className="automatic-checkpoint-error-text">
-          This activity is not configured for standalone H5P delivery.
-        </p>
-      </div>
-    );
-  }
 
   const checkpointStatus: Status =
     status === "error" ? "error" : complete || status === "verified" ? "verified" : status;

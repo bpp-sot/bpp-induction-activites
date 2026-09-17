@@ -42,17 +42,17 @@ describe("progress v2", () => {
     expect(reloaded.completed[id]).toEqual({ completedAt: at, method: "h5p-xapi", score });
   });
 
-  it("round-trips a Prevent learner-declaration completion", () => {
+  it("round-trips a Prevent xAPI completion with score", () => {
     const store = makeStore();
     const id: ActivityId = "prevent-duty";
     const at = "2026-05-06T07:08:09.000Z";
+    const score: CompletionScore = { raw: 12, max: 14 };
     const started = loadProgress(store);
-    const completed = completeActivity(started, id, "learner-declaration", at);
+    const completed = completeActivity(started, id, "h5p-xapi", at, score);
     saveProgress(completed, store);
     const reloaded = loadProgress(store);
     expect(reloaded).toEqual(completed);
-    expect(reloaded.completed[id]).toEqual({ completedAt: at, method: "learner-declaration" });
-    expect(reloaded.completed[id]?.score).toBeUndefined();
+    expect(reloaded.completed[id]).toEqual({ completedAt: at, method: "h5p-xapi", score });
   });
 
   it("ignores malformed and wrong-version data", () => {
@@ -72,7 +72,7 @@ describe("progress v2", () => {
         version: 2,
         completed: {
           "british-values": { completedAt: "2026-01-02T03:04:05.000Z", method: "learner-declaration" },
-          "prevent-duty": { completedAt: "2026-05-06T07:08:09.000Z", method: "h5p-xapi" },
+          "prevent-duty": { completedAt: "2026-05-06T07:08:09.000Z", method: "learner-declaration" },
         },
       }),
     });
@@ -86,7 +86,7 @@ describe("progress v2", () => {
         version: 2,
         completed: {
           "british-values": { completedAt: "not-a-date", method: "h5p-xapi" },
-          "prevent-duty": { completedAt: "2026-05-06T07:08:09.000Z", method: "learner-declaration", score: { raw: -1, max: 5 } },
+          "prevent-duty": { completedAt: "2026-05-06T07:08:09.000Z", method: "h5p-xapi", score: { raw: -1, max: 5 } },
         },
       }),
     });

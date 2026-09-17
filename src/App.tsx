@@ -50,12 +50,10 @@ export default function App() {
     method: CompletionMethod,
     at: string,
     score?: CompletionScore,
-    returnToDashboard = true,
   ) => {
     persist(completeActivity(progress, id, method, at, score));
     const shortTitle = activities.find((a) => a.id === id)!.shortTitle;
     setStatusMessage(`${shortTitle} completion recorded.`);
-    if (returnToDashboard) goDashboard();
   };
 
   return (
@@ -309,11 +307,9 @@ function ActivityDetail({
     method: CompletionMethod,
     at: string,
     score?: CompletionScore,
-    returnToDashboard?: boolean,
   ) => void;
 }) {
   const already = isComplete(progress, activity.id);
-  const [checked, setChecked] = useState(false);
   const accent = ACCENT_VAR[activity.accent];
 
   return (
@@ -332,87 +328,13 @@ function ActivityDetail({
         <p className="activity-detail-desc">{activity.description}</p>
       </div>
 
-      {activity.delivery.type === "standalone" ? (
-        <StandaloneH5P
-          activity={activity}
-          complete={already}
-          onVerified={(at, score) =>
-            onComplete(activity.id, "h5p-xapi", at, score, false)
-          }
-        />
-      ) : (
-        <>
-          <div className="h5p-frame h5p-external-frame">
-            <iframe
-              src={activity.delivery.embedUrl}
-              title={activity.iframeTitle}
-              width="1088"
-              height="637"
-              frameBorder="0"
-              allowFullScreen
-              allow="autoplay *; geolocation *; microphone *; camera *; midi *; encrypted-media *"
-            />
-          </div>
+      <StandaloneH5P
+        activity={activity}
+        complete={already}
+        onVerified={(at, score) => onComplete(activity.id, "h5p-xapi", at, score)}
+      />
 
-          <section className="checkpoint" aria-labelledby="checkpoint-heading">
-            <h2 id="checkpoint-heading" className="checkpoint-heading">
-              Confirm your completion
-            </h2>
-            <p className="checkpoint-support">
-              This site cannot automatically inspect your activity results. Please confirm below once you
-              have completed the activity above.
-            </p>
-            <label className="checkpoint-pledge">
-              <input
-                type="checkbox"
-                checked={checked}
-                onChange={(e) => setChecked(e.target.checked)}
-              />
-              <span>{activity.pledge}</span>
-            </label>
-            <div className="checkpoint-actions">
-              {already ? (
-                <button
-                  className="btn btn-primary"
-                  disabled={!checked}
-                  onClick={() =>
-                    onComplete(
-                      activity.id,
-                      "learner-declaration",
-                      new Date().toISOString(),
-                      undefined,
-                      true,
-                    )
-                  }
-                >
-                  Update confirmation
-                </button>
-              ) : (
-                <button
-                  className="btn btn-primary"
-                  disabled={!checked}
-                  onClick={() =>
-                    onComplete(
-                      activity.id,
-                      "learner-declaration",
-                      new Date().toISOString(),
-                      undefined,
-                      true,
-                    )
-                  }
-                >
-                  Mark as complete
-                </button>
-              )}
-              {already && !checked && (
-                <span className="checkpoint-already">Already marked complete.</span>
-              )}
-            </div>
-          </section>
-        </>
-      )}
-
-      {activity.delivery.type === "standalone" && already && (
+      {already && (
         <button className="btn btn-ghost back-btn standalone-back-btn" onClick={onBack}>
           Back to activities
         </button>
@@ -520,7 +442,7 @@ function CertificateScreen({
             <p className="cert-line">has completed the BPP induction activities</p>
             <p className="cert-activities">British Values & Prevent Duty</p>
             <p className="cert-date">Completed on {completedDate}</p>
-            <p className="cert-footer">British Values confirmed by H5P &middot; Prevent Duty confirmed by the learner</p>
+            <p className="cert-footer">British Values and Prevent Duty completion verified by H5P</p>
           </div>
         </div>
       </div>
